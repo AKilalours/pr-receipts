@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* ── Design tokens ───────────────────────────────────────────────────────────
+   One palette, defined once, in both themes. Components never hardcode a
+   colour: they reference a token by role (surface, border, verdict) so a theme
+   change is a token change and not a find-and-replace across the codebase. */
+@theme {
+  --color-canvas:        oklch(99% 0.002 260);
+  --color-surface:       oklch(100% 0 0);
+  --color-surface-sunk:  oklch(97% 0.003 260);
+  --color-line:          oklch(91% 0.005 260);
+  --color-ink:           oklch(24% 0.012 260);
+  --color-ink-soft:      oklch(52% 0.012 260);
+  --color-ink-faint:     oklch(66% 0.010 260);
+
+  /* Verdicts. Unsupported is the one the eye must find first, so it is the
+     only warm hue in the set. Supported is deliberately quiet: a claim that
+     checks out needs no attention. */
+  --color-supported:     oklch(58% 0.090 155);
+  --color-supported-bg:  oklch(96% 0.022 155);
+  --color-contradicted:  oklch(55% 0.150 25);
+  --color-contradicted-bg: oklch(96% 0.030 25);
+  --color-unsupported:   oklch(60% 0.130 75);
+  --color-unsupported-bg: oklch(96% 0.040 75);
+
+  --color-add-bg:        oklch(96% 0.030 155);
+  --color-del-bg:        oklch(96% 0.030 25);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-canvas:        oklch(17% 0.010 260);
+    --color-surface:       oklch(21% 0.012 260);
+    --color-surface-sunk:  oklch(19% 0.011 260);
+    --color-line:          oklch(30% 0.014 260);
+    --color-ink:           oklch(94% 0.004 260);
+    --color-ink-soft:      oklch(72% 0.010 260);
+    --color-ink-faint:     oklch(56% 0.010 260);
+
+    --color-supported:     oklch(72% 0.095 155);
+    --color-supported-bg:  oklch(27% 0.035 155);
+    --color-contradicted:  oklch(70% 0.140 25);
+    --color-contradicted-bg: oklch(27% 0.050 25);
+    --color-unsupported:   oklch(78% 0.120 75);
+    --color-unsupported-bg: oklch(28% 0.055 75);
+
+    --color-add-bg:        oklch(26% 0.040 155);
+    --color-del-bg:        oklch(26% 0.040 25);
+  }
+}
+
+html { color-scheme: light dark; }
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
