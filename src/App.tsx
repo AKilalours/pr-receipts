@@ -5,6 +5,7 @@ import { verifyClaims } from './core/verify'
 import { ClaimList } from './ui/ClaimList'
 import { DiffPane, Empty } from './ui/DiffPane'
 import { VERDICT_LABEL, VERDICT_RANK, VERDICT_STYLE } from './ui/verdict'
+import { SearchForm } from './ui/SearchForm'
 
 // Chosen because it exercises all three states: two claims supported by lines
 // added under a test path, and one the diff says nothing about.
@@ -20,6 +21,10 @@ export default function App() {
   const [url, setUrl] = useState('')
   const [state, setState] = useState<State>({ kind: 'idle' })
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  // Bumped by Enter. DiffPane scrolls when its anchors change, so re-jumping to
+  // the claim you are already on needs a value that changes even when the
+  // anchors do not.
+  const [jump, setJump] = useState(0)
   const input = useRef<HTMLInputElement>(null)
 
   const analyse = useCallback(async (target: string) => {
@@ -64,6 +69,7 @@ export default function App() {
       if (typing || !ordered.length) return
       if (e.key === 'j' || e.key === 'ArrowDown') { e.preventDefault(); move(1) }
       if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); move(-1) }
+      if (e.key === 'Enter' && selectedId) { e.preventDefault(); setJump((n) => n + 1) }
     }
     const move = (d: number) => {
       const i = ordered.findIndex((c) => c.id === selectedId)
@@ -78,35 +84,34 @@ export default function App() {
 
   return (
     <div className="flex h-dvh flex-col bg-canvas text-ink">
-      <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-line px-4 py-3">
-        <h1 className="text-[13px] font-semibold tracking-tight">
-          pr<span className="text-ink-faint">-</span>receipts
-        </h1>
-        <form
-          className="flex min-w-0 flex-1 items-center gap-2"
-          onSubmit={(e) => { e.preventDefault(); if (url.trim()) analyse(url.trim()) }}
-        >
-          <input
-            ref={input}
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://github.com/owner/repo/pull/123"
-            aria-label="GitHub pull request URL"
-            spellCheck={false}
-            className="min-w-0 flex-1 rounded-md border border-line bg-surface px-3 py-1.5 text-[13px] placeholder:text-ink-faint focus:border-ink-faint focus:outline-none"
-          />
+      {state.kind !== 'idle' && (
+        <header className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-line px-4 py-2.5">
           <button
-            type="submit"
-            disabled={!url.trim() || state.kind === 'loading'}
-            className="shrink-0 rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-medium text-canvas disabled:opacity-40"
+            type="button"
+            onClick={() => { setState({ kind: 'idle' }); setUrl(''); setSelectedId(null) }}
+            className="text-[13px] font-semibold tracking-tight text-ink"
           >
-            {state.kind === 'loading' ? 'Checking' : 'Check'}
+            pr<span className="text-ink-faint">-</span>receipts
           </button>
-        </form>
-      </header>
+          <SearchForm
+            ref={input}
+            url={url}
+            onChange={setUrl}
+            onSubmit={() => analyse(url.trim())}
+            busy={state.kind === 'loading'}
+            variant="bar"
+          />
+        </header>
+      )}
 
       {state.kind === 'idle' && (
-        <Landing onExample={() => { setUrl(EXAMPLE); analyse(EXAMPLE) }} />
+        <Landing
+          url={url}
+          onChange={setUrl}
+          onSubmit={() => analyse(url.trim())}
+          inputRef={input}
+          onExample={() => { setUrl(EXAMPLE); analyse(EXAMPLE) }}
+        />
       )}
 
       {state.kind === 'loading' && <Skeleton />}
@@ -145,9 +150,9 @@ export default function App() {
 
             <main className="min-h-0 flex-1 overflow-y-auto bg-surface">
               {selectedId ? (
-                <DiffPane files={state.analysis.pr.files} anchors={anchors} />
+                <DiffPane files={state.analysis.pr.files} anchors={anchors} jump={jump} />
               ) : (
-                <Empty>Select a claim to see what the diff says about it. Use j and k to move, / to search another pull request.</Empty>
+                <Empty>Select a claim to see what the diff says about it. <span className="text-ink-faint">j</span> and <span className="text-ink-faint">k</span> move, <span className="text-ink-faint">enter</span> jumps back to the evidence.</Empty>
               )}
             </main>
           </div>
@@ -188,23 +193,48 @@ function Summary({ analysis }: { analysis: Analysis }) {
   )
 }
 
-function Landing({ onExample }: { onExample: () => void }) {
+function Landing({ url, onChange, onSubmit, inputRef, onExample }: {
+  url: string
+  onChange: (v: string) => void
+  onSubmit: () => void
+  inputRef: React.RefObject<HTMLInputElement | null>
+  onExample: () => void
+}) {
   return (
-    <div className="flex flex-1 items-center justify-center px-6">
-      <div className="max-w-md text-center">
-        <p className="text-[15px] leading-relaxed text-ink">
-          Paste a pull request. See every claim it makes, and what the diff actually shows.
+    // Sits above the optical centre, not at it. Content centred in a tall
+    // viewport reads as floating; a little high reads as placed.
+    <div className="flex flex-1 flex-col items-center px-6 pt-[18vh]">
+      <div className="flex w-full max-w-[520px] flex-col items-center">
+        <h1 className="text-[15px] font-semibold tracking-tight text-ink-soft">
+          pr<span className="text-ink-faint">-</span>receipts
+        </h1>
+
+        <p className="mt-5 text-center text-[19px] font-medium leading-[1.35] tracking-tight text-balance text-ink">
+          See every claim a pull request makes, and what the diff actually shows.
         </p>
-        <p className="mt-3 text-[13px] leading-relaxed text-ink-soft">
-          Claims start as <span className="text-unsupported">unsupported</span> and have to earn their way off it.
-          Nothing is marked supported without a line you can go and read.
+
+        <p className="mt-3 max-w-[440px] text-center text-[13.5px] leading-relaxed text-balance text-ink-soft">
+          Claims start <span className="text-unsupported">unsupported</span> and have to earn their
+          way off it. Nothing is marked supported without a line you can go and read.
         </p>
+
+        <div className="mt-7 w-full">
+          <SearchForm
+            ref={inputRef}
+            url={url}
+            onChange={onChange}
+            onSubmit={onSubmit}
+            busy={false}
+            variant="hero"
+          />
+        </div>
+
         <button
           type="button"
           onClick={onExample}
-          className="mt-5 rounded-md border border-line px-3 py-1.5 text-[12.5px] text-ink-soft hover:bg-surface-sunk"
+          className="mt-3.5 text-[13px] text-ink-soft underline decoration-line underline-offset-4 hover:text-ink hover:decoration-ink-faint"
         >
-          Try an example
+          or try one on vitejs/vite
         </button>
       </div>
     </div>

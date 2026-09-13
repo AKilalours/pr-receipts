@@ -5,12 +5,14 @@ import { parsePatch } from '../core/diff'
 interface Props {
   files: ChangedFile[]
   anchors: DiffAnchor[]
+  /** Changes when the reader presses enter, to re-scroll to the same claim. */
+  jump?: number
 }
 
 const inAnchor = (anchors: DiffAnchor[], file: string, line: number, side: string) =>
   anchors.some((a) => a.file === file && a.side === side && line >= a.startLine && line <= a.endLine)
 
-export function DiffPane({ files, anchors }: Props) {
+export function DiffPane({ files, anchors, jump }: Props) {
   const firstHit = useRef<HTMLDivElement>(null)
 
   // Move the reader to the evidence rather than making them find it. 'center'
@@ -19,7 +21,7 @@ export function DiffPane({ files, anchors }: Props) {
   // mean anything.
   useEffect(() => {
     firstHit.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [anchors])
+  }, [anchors, jump])
 
   const anchored = new Set(anchors.map((a) => a.file))
   const shown = anchors.length ? files.filter((f) => anchored.has(f.path)) : files
