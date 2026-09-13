@@ -37,9 +37,11 @@ asserted in `src/core/verify.test.ts`.
 
 - **Claims are quoted verbatim, never paraphrased.** If the tool rewords a
   claim, a reviewer has to audit the tool as well as the PR.
-- **`unsupported` is the only warm colour in the palette.** A claim that checks
-  out needs no attention; a claim with nothing behind it is the thing your eye
-  should find first.
+- **Supported is the only quiet colour in the palette.** A claim that checks out
+  needs nothing from the reader. The two verdicts that need attention are warm,
+  and unsupported is amber rather than red because it is the default state of an
+  unreviewed claim, not an error: colour the common case red and people learn to
+  ignore red.
 - **Confidence renders as a band, not a number.** A decimal implies a precision
   this does not have.
 - **`Claim` and `Evidence` are separate types joined by id.** Extraction and
@@ -64,8 +66,24 @@ npm test               # vitest
 `GITHUB_TOKEN` is optional. Without it you get GitHub's anonymous limit of 60
 requests an hour; with it, 5000. It is read only on the server.
 
+## What a verdict means
+
+| Verdict | Requires | Example |
+|---|---|---|
+| **Supported** | A structural signal, plus at least one anchor | Lines added under a test path, for a claim about a test. A figure that literally appears in a committed line. |
+| **Contradicted** | The diff moving opposite to the claim | "Removes the retry" while the diff only adds lines containing it. |
+| **Unsupported** | The default. No structural signal found. | Everything else, including claims whose subject the diff merely *mentions*. |
+
+That last row is the important one. If a claim names `pendingState` and the diff
+touches `pendingState`, the tool shows you those lines and still says
+unsupported, because a word appearing in a changed line says nothing about
+whether the sentence around it is true. Treating co-occurrence as proof is the
+error this tool exists to catch, so it must not commit it itself.
+
 ## Status
 
-Scaffolding, types, design tokens and the fetch layer are in place.
-`extractClaims` and `verifyClaims` are not written yet: they are the two seams
-you implement, against the failing test suites that define their contracts. See `docs/PLAN.md`.
+Working end to end. 18 tests. Verified against real pull requests in
+`facebook/react` and `vitejs/vite`.
+
+Open: an optional model-backed extraction pass, to be measured against the
+deterministic baseline rather than assumed better than it. See `docs/PLAN.md`.

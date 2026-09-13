@@ -13,9 +13,11 @@
   --color-ink-soft:      oklch(52% 0.012 260);
   --color-ink-faint:     oklch(66% 0.010 260);
 
-  /* Verdicts. Unsupported is the one the eye must find first, so it is the
-     only warm hue in the set. Supported is deliberately quiet: a claim that
-     checks out needs no attention. */
+  /* Verdicts. The two that need a reviewer's attention are warm; supported is
+     the only cool, quiet one, because a claim that checks out needs nothing
+     from the reader. Unsupported is amber rather than red: it is the DEFAULT
+     state of an unreviewed claim, not an error, and colouring the common case
+     red teaches people to ignore red. */
   --color-supported:     oklch(58% 0.090 155);
   --color-supported-bg:  oklch(96% 0.022 155);
   --color-contradicted:  oklch(55% 0.150 25);

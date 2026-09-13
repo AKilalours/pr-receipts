@@ -38,3 +38,24 @@ describe('extractClaims', () => {
     expect(claims.map((c) => c.source)).toEqual(['pr_title', 'pr_body'])
   })
 })
+
+describe('extractClaims, markdown handling', () => {
+  it('ignores lines inside a fenced code block', () => {
+    // A line of code is dense with identifiers, so it passes the anchor test
+    // and arrives as a claim unless fence state is tracked across lines.
+    const body = [
+      'Adds a hard timeout.',
+      '```ts',
+      'const queue: UpdateQueue<boolean> = get_queue()',
+      '```',
+    ].join('\n')
+    const claims = extractClaims(pr({ body }))
+    expect(claims).toHaveLength(1)
+    expect(claims[0].text).toBe('Adds a hard timeout.')
+  })
+
+  it('ignores indented code blocks', () => {
+    const body = 'Adds a retry.\n\n    const x = foo_bar()\n'
+    expect(extractClaims(pr({ body }))).toHaveLength(1)
+  })
+})

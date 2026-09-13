@@ -42,8 +42,10 @@ export interface Evidence {
   verdict: Verdict
   /** Why the verdict is what it is, in one sentence a reviewer can check. */
   reason: string
-  /** The hunks a reviewer should look at. Empty for 'unsupported', which is
-   *  what makes that state honest: there is nothing to show. */
+  /** Places in the diff worth reading. For 'supported' and 'contradicted'
+   *  these are the evidence and at least one is required. For 'unsupported'
+   *  they are LEADS: lines that touch what the claim names without settling
+   *  it. Anchors are where to look, never proof on their own. */
   anchors: DiffAnchor[]
   /** 0 to 1. Rendered as a coarse band, never as a number, because a decimal
    *  implies a precision this does not have. */
