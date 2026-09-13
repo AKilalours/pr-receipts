@@ -57,7 +57,14 @@ asserted in `src/core/verify.test.ts`.
 
 ## Run it
 
+Node 20.19 or newer. Vite 8 builds with rolldown, which uses `styleText` from
+`node:util`, added in Node 20.12, so Node 18 fails at startup with a
+`SyntaxError` about a missing export rather than a version message. `.nvmrc`
+and the `engines` field are there so the requirement is stated rather than
+discovered.
+
 ```bash
+nvm use                # reads .nvmrc
 npm install
 npm run dev            # http://localhost:5173
 npm test               # vitest
