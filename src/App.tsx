@@ -37,11 +37,16 @@ export default function App() {
 
       const pr = data as PullRequest & { truncated: boolean }
       const claims = extractClaims(pr)
-      setState({
-        kind: 'ready',
-        truncated: pr.truncated,
-        analysis: { pr, claims, evidence: verifyClaims(pr, claims) },
-      })
+      const evidence = verifyClaims(pr, claims)
+      setState({ kind: 'ready', truncated: pr.truncated, analysis: { pr, claims, evidence } })
+
+      // Land on the worst claim rather than an empty pane. The first thing a
+      // reviewer sees should be the tool doing its job, and the ordering
+      // already puts the claim that most needs attention first.
+      const worst = [...claims].sort(
+        (x, y) => VERDICT_RANK[evidence[x.id]?.verdict ?? 'pending'] - VERDICT_RANK[evidence[y.id]?.verdict ?? 'pending'],
+      )[0]
+      if (worst) setSelectedId(worst.id)
     } catch {
       // A thrown fetch is a transport problem, not an API response. Saying
       // "check your connection" for a 500 sends people to the wrong place, so
@@ -150,7 +155,12 @@ export default function App() {
 
             <main className="min-h-0 flex-1 overflow-y-auto bg-surface">
               {selectedId ? (
-                <DiffPane files={state.analysis.pr.files} anchors={anchors} jump={jump} />
+                <DiffPane
+                  files={state.analysis.pr.files}
+                  anchors={anchors}
+                  jump={jump}
+                  ring={VERDICT_STYLE[state.analysis.evidence[selectedId]?.verdict ?? 'pending'].ring}
+                />
               ) : (
                 <Empty>Select a claim to see what the diff says about it. <span className="text-ink-faint">j</span> and <span className="text-ink-faint">k</span> move, <span className="text-ink-faint">enter</span> jumps back to the evidence.</Empty>
               )}

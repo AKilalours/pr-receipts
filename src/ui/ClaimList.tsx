@@ -31,8 +31,13 @@ export function ClaimList({ claims, evidence, selectedId, onSelect }: Props) {
               role="option"
               aria-selected={selected}
               onClick={() => onSelect(claim.id)}
-              className={`w-full px-4 py-3 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink-faint ${
-                selected ? 'bg-surface-sunk' : 'hover:bg-surface-sunk/60'
+              // Selection is an accent bar plus a background, not a background
+              // alone. In dark mode the sunk surface sits three percent off the
+              // canvas, which is invisible next to a bright diff pane, and a
+              // reviewer stepping through with j/k has to be able to see where
+              // they are without looking away.
+              className={`w-full border-l-2 py-3 pr-4 pl-[14px] text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink-faint ${
+                selected ? `${style.border} bg-surface-sunk` : 'border-transparent hover:bg-surface-sunk/50'
               }`}
             >
               <div className="flex items-start gap-2.5">

@@ -7,12 +7,17 @@ interface Props {
   anchors: DiffAnchor[]
   /** Changes when the reader presses enter, to re-scroll to the same claim. */
   jump?: number
+  /** Ring colour for the highlighted lines, from the verdict being shown.
+   *  Hardcoding amber here meant evidence FOR a supported claim was ringed in
+   *  the unsupported colour, which tells the reader the opposite of the truth
+   *  in the one place they are looking hardest. */
+  ring?: string
 }
 
 const inAnchor = (anchors: DiffAnchor[], file: string, line: number, side: string) =>
   anchors.some((a) => a.file === file && a.side === side && line >= a.startLine && line <= a.endLine)
 
-export function DiffPane({ files, anchors, jump }: Props) {
+export function DiffPane({ files, anchors, jump, ring = 'ring-ink-faint/70' }: Props) {
   const firstHit = useRef<HTMLDivElement>(null)
 
   // Move the reader to the evidence rather than making them find it. 'center'
@@ -33,6 +38,16 @@ export function DiffPane({ files, anchors, jump }: Props) {
 
   return (
     <div className="font-mono text-[12px] leading-[1.55]">
+      {/* Say it, rather than showing an unhighlighted diff and letting the
+          reader assume it is the evidence. A claim with nothing to point at is
+          the tool's most common answer, and silently rendering the whole diff
+          underneath it invites exactly the inference the tool exists to
+          prevent. */}
+      {!anchors.length && (
+        <p className="border-b border-line bg-surface-sunk px-4 py-2.5 font-sans text-[12.5px] text-ink-soft">
+          Nothing in this diff points at that claim. Showing every changed file, unmarked.
+        </p>
+      )}
       {shown.map((file) => {
         const lines = parsePatch(file)
         return (
@@ -58,7 +73,7 @@ export function DiffPane({ files, anchors, jump }: Props) {
                     ref={isFirst ? firstHit : undefined}
                     className={`flex ${
                       l.kind === 'add' ? 'bg-add-bg' : l.kind === 'del' ? 'bg-del-bg' : ''
-                    } ${hit ? 'ring-1 ring-inset ring-unsupported/60' : ''}`}
+                    } ${hit ? `ring-1 ring-inset ${ring}` : ''}`}
                   >
                     <span className="w-12 shrink-0 select-none pr-2 text-right text-ink-faint tabular-nums">
                       {l.line}

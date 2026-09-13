@@ -14,11 +14,13 @@ export const VERDICT_RANK: Record<Verdict, number> = {
   contradicted: 0, unsupported: 1, pending: 2, supported: 3,
 }
 
-export const VERDICT_STYLE: Record<Verdict, { dot: string; chip: string; text: string }> = {
-  contradicted: { dot: 'bg-contradicted', chip: 'bg-contradicted-bg text-contradicted', text: 'text-contradicted' },
-  unsupported:  { dot: 'bg-unsupported',  chip: 'bg-unsupported-bg text-unsupported',   text: 'text-unsupported' },
-  supported:    { dot: 'bg-supported',    chip: 'bg-supported-bg text-supported',       text: 'text-supported' },
-  pending:      { dot: 'bg-ink-faint',    chip: 'bg-surface-sunk text-ink-soft',        text: 'text-ink-soft' },
+export const VERDICT_STYLE: Record<Verdict, {
+  dot: string; chip: string; text: string; border: string; ring: string
+}> = {
+  contradicted: { dot: 'bg-contradicted', chip: 'bg-contradicted-bg text-contradicted', text: 'text-contradicted', border: 'border-contradicted', ring: 'ring-contradicted/70' },
+  unsupported:  { dot: 'bg-unsupported',  chip: 'bg-unsupported-bg text-unsupported',   text: 'text-unsupported',  border: 'border-unsupported',  ring: 'ring-unsupported/70' },
+  supported:    { dot: 'bg-supported',    chip: 'bg-supported-bg text-supported',       text: 'text-supported',    border: 'border-supported',    ring: 'ring-supported/70' },
+  pending:      { dot: 'bg-ink-faint',    chip: 'bg-surface-sunk text-ink-soft',        text: 'text-ink-soft',     border: 'border-ink-faint',    ring: 'ring-ink-faint/70' },
 }
 
 export const SOURCE_LABEL = {

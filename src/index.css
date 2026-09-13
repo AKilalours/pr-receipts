@@ -32,25 +32,33 @@
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
+/* Dark overrides are PLAIN CSS CUSTOM PROPERTIES on :root, not a second
+   @theme block.
+
+   Tailwind 4 hoists every @theme variable into :root and drops the at-rule it
+   was written in, so a @theme nested inside a media query is not conditional:
+   its values simply win everywhere, and the light palette never renders. The
+   generated utilities read var(--color-x) at use time, so redefining the same
+   names here does work, and only here. */
 @media (prefers-color-scheme: dark) {
-  @theme {
-    --color-canvas:        oklch(17% 0.010 260);
-    --color-surface:       oklch(21% 0.012 260);
-    --color-surface-sunk:  oklch(19% 0.011 260);
-    --color-line:          oklch(30% 0.014 260);
-    --color-ink:           oklch(94% 0.004 260);
-    --color-ink-soft:      oklch(72% 0.010 260);
-    --color-ink-faint:     oklch(56% 0.010 260);
+  :root {
+    --color-canvas:          oklch(17% 0.010 260);
+    --color-surface:         oklch(21% 0.012 260);
+    --color-surface-sunk:    oklch(24% 0.013 260);
+    --color-line:            oklch(30% 0.014 260);
+    --color-ink:             oklch(94% 0.004 260);
+    --color-ink-soft:        oklch(72% 0.010 260);
+    --color-ink-faint:       oklch(56% 0.010 260);
 
-    --color-supported:     oklch(72% 0.095 155);
-    --color-supported-bg:  oklch(27% 0.035 155);
-    --color-contradicted:  oklch(70% 0.140 25);
+    --color-supported:       oklch(72% 0.095 155);
+    --color-supported-bg:    oklch(27% 0.035 155);
+    --color-contradicted:    oklch(70% 0.140 25);
     --color-contradicted-bg: oklch(27% 0.050 25);
-    --color-unsupported:   oklch(78% 0.120 75);
-    --color-unsupported-bg: oklch(28% 0.055 75);
+    --color-unsupported:     oklch(78% 0.120 75);
+    --color-unsupported-bg:  oklch(28% 0.055 75);
 
-    --color-add-bg:        oklch(26% 0.040 155);
-    --color-del-bg:        oklch(26% 0.040 25);
+    --color-add-bg:          oklch(26% 0.040 155);
+    --color-del-bg:          oklch(26% 0.040 25);
   }
 }
 
